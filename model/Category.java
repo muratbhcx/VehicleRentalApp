@@ -1,6 +1,8 @@
 package Vehicle_rental_app.model;
 
-public class Category extends BaseModel{
+public class Category {
+
+    private Long id;
 
     private String name;
 
@@ -12,30 +14,23 @@ public class Category extends BaseModel{
         this.name = name;
     }
 
-    public Category(String name) {
-        this.name = name;
+    public Long getId() {
+        return id;
     }
 
-    public Category(String name, User createdUser, User updatedUser) {
-        this.name = name;
-        this.setCreatedUser(createdUser);
-        this.setUpdatedUser(updatedUser);
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
+
         return name;
     }
 
     public void setName(String name) {
+
         this.name = name;
     }
 
-    @Override
-    public String toString() {
-        return "Category{" +
-                "id='" + getId() + '\'' +
-                "name='" + name + '\'' +
-                '}';
-    }
 }
 

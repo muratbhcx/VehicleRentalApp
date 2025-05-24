@@ -1,72 +1,93 @@
 package Vehicle_rental_app.service;
 
-import Vehicle_rental_app.dao.CartItemDAO;
 import Vehicle_rental_app.dao.RentDAO;
 import Vehicle_rental_app.model.*;
-import Vehicle_rental_app.model.enums.PaymentMethod;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+
 
 public class RentService {
 
     private final RentDAO rentDAO;
 
-    private final CartItemService cartItemService;
-
-    private final PaymentService paymentService;
-
-    private final RentItemsService rentItemsService;
-
 
     public RentService() {
+
         this.rentDAO = new RentDAO();
-        this.cartItemService = new CartItemService();
-        this.paymentService = new PaymentService();
-        this.rentItemsService = new RentItemsService();
     }
 
-    public Rent save(Customer customer, PaymentMethod paymentMethod) {
-        List<CartItem> cartItems = cartItemService.findByCustomerId(customer.getId());
+    public void createRental(Customer loginedCustomer, Vehicle vehicle, String periodType, int time) {
+        int age = loginedCustomer.getAge();
+        BigDecimal deposit = BigDecimal.ZERO;
+        if ("corporate".equals(loginedCustomer.getRole()) && (!periodType.equals("ay") || time < 1)) {
+            System.out.println("Kurumsal Müşteriler En Az 1 Aylık Kiralama Yapabilir.");
+            return;
+        }
+
+        if (vehicle.getPrice().compareTo(BigDecimal.valueOf(2000000)) > 0) {
+            if (age < 30) {
+                System.out.println("Bu Aracı Sadece 30 Yaşından Büyük Müşteriler Kiralayabilir.");
+                return;
+            }
+            deposit = vehicle.getPrice().multiply(BigDecimal.valueOf(0.10));
+            System.out.println("Bu Araç İçin Gereken Depozito: " + deposit + " TL");
+
+        }
+        BigDecimal amount = vehicle.getRentalPrice();
         BigDecimal totalAmount = BigDecimal.ZERO;
-        cartItems.forEach(
-                cartItem -> {
-                    BigDecimal amount = new BigDecimal(cartItem.getVehicle().getPrice().intValue());
-                    totalAmount.add(amount);
-                }
-        );
+        long totalHours;
 
 
+        switch (periodType) {
+            case "saat":
+                totalHours = time;
+                totalAmount = amount.multiply(BigDecimal.valueOf(totalHours));
+                break;
+            case "gün":
+                totalHours = time * 24;
+                totalAmount = amount.multiply(BigDecimal.valueOf(totalHours));
+                break;
+            case "hafta":
+                totalHours = time * 24 * 7;
+                totalAmount = amount.multiply(BigDecimal.valueOf(totalHours));
+                break;
+            case "ay":
+                totalHours = time * 24 * 30;
+                totalAmount = amount.multiply(BigDecimal.valueOf(totalHours));
+                break;
+            default:
+                System.out.println("GEÇERSİZ İŞLEM!");
+        }
+        BigDecimal finalAmount = totalAmount.add(deposit);
+        System.out.println("TOPLAM: " +  finalAmount + " TL");
 
         Rent rent = new Rent();
-        rent.setCustomer(customer);
-        rent.setTotalAmount(totalAmount);
-        rent.setRentDate(LocalDateTime.now());
-        long rentId = rentDAO.save(rent);
-
-        List<RentItem> rentItems = new ArrayList<>();
-
-        cartItems.forEach(cartItem -> {
-            RentItem rentItem = new RentItem();
-            rentItem.setRent(new Rent(rentId));
-            rentItem.setVehicle(new Vehicle(cartItem.getVehicle().getId()));
-            rentItem.setPrice(cartItem.getVehicle().getPrice());
-            rentItems.add(rentItem);
-        });
-
-        rentItemsService.save(rentItems);
+        rent.setCustomer(new Customer(loginedCustomer.getId()));
+        rent.setVehicleBrand(vehicle.getBrand());
+        rent.setVehicleModel(vehicle.getModel());
+        rent.setTotalAmount(finalAmount);
 
         rentDAO.save(rent);
-        paymentService.save(rent, paymentMethod);
-        System.out.println("Kiralama İşlemi Başarıyla Tamamlandı!");
-        return rent;
+        System.out.println("Kiralama Yapıldı!");
 
 
     }
 
-    public List<Rent> getAllByCustomer(Customer loginedCustomer) {
-        return rentDAO.findAllByCustomerId(loginedCustomer.getId());
+
+    public void listPastRentals(Customer loginedCustomer) {
+        List<Rent> rents = rentDAO.findAllByCustomerId(loginedCustomer.getId());
+        if (rents.isEmpty()) {
+            System.out.println("GEÇMİŞ KİRALAMA BULUNAMADI!\n");
+            return;
+        }
+        System.out.println("\n-----GEÇMİŞ KİRALAMALAR-----");
+        System.out.printf("%-10s %-10s %-10s%n", "MARKA", "MODEL", "TUTAR");
+        for (Rent rent : rents) {
+            System.out.printf("%-10s %-10s %-10sTL%n\n",
+                    rent.getVehicleBrand(),
+                    rent.getVehicleModel(),
+                    rent.getTotalAmount());
+        }
     }
 }

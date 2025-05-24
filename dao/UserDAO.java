@@ -4,17 +4,14 @@ import Vehicle_rental_app.dao.constants.SqlScriptConstants;
 import Vehicle_rental_app.model.User;
 import Vehicle_rental_app.util.DBUtil;
 
-import javax.naming.ldap.PagedResultsControl;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-public class UserDAO implements BaseDAO<User> {
+public class UserDAO {
 
-
-    @Override
     public long save(User user) {
         try (Connection connection = DBUtil.getConnection();
         PreparedStatement ps = connection.prepareStatement(SqlScriptConstants.USER_SAVE))
@@ -27,26 +24,6 @@ public class UserDAO implements BaseDAO<User> {
             e.printStackTrace();
         }
         return 0;
-    }
-
-    @Override
-    public void update(User user) {
-
-    }
-
-    @Override
-    public User findById(Long id) {
-        return null;
-    }
-
-    @Override
-    public List<User> findAll(int page) {
-        return List.of();
-    }
-
-    @Override
-    public void delete(Long id) {
-
     }
 
     public User findByUsername(String username) {

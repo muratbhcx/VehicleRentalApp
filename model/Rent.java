@@ -1,31 +1,28 @@
 package Vehicle_rental_app.model;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
 
-public class Rent extends BaseModel {
+public class Rent {
+
+    private long id;
 
     private Customer customer;
 
     private BigDecimal totalAmount;
 
-    private LocalDateTime rentDate;
+    private String vehicleBrand;
 
-    private List<RentItem> rentItems;
+    private String vehicleModel;
 
     public Rent() {
-        this.rentDate = LocalDateTime.now();
     }
 
-    public Rent(Long id) {
-        this.setId(id);
+    public long getId() {
+        return id;
     }
 
-    public Rent(Customer customer, BigDecimal totalAmount, LocalDateTime rentDate) {
-        this.customer = customer;
-        this.totalAmount = totalAmount;
-        this.rentDate = LocalDateTime.now();
+    public void setId(long id) {
+        this.id = id;
     }
 
     public Customer getCustomer() {
@@ -44,19 +41,19 @@ public class Rent extends BaseModel {
         this.totalAmount = totalAmount;
     }
 
-    public LocalDateTime getRentDate() {
-        return rentDate;
+    public String getVehicleBrand() {
+        return vehicleBrand;
     }
 
-    public void setRentDate(LocalDateTime rentDate) {
-        this.rentDate = rentDate;
+    public void setVehicleBrand(String vehicleBrand) {
+        this.vehicleBrand = vehicleBrand;
     }
 
-    public List<RentItem> getRentItems() {
-        return rentItems;
+    public String getVehicleModel() {
+        return vehicleModel;
     }
 
-    public void setRentItems(List<RentItem> rentItems) {
-        this.rentItems = rentItems;
+    public void setVehicleModel(String vehicleModel) {
+        this.vehicleModel = vehicleModel;
     }
 }

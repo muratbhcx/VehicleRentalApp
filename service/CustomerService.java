@@ -1,6 +1,5 @@
 package Vehicle_rental_app.service;
 
-import Vehicle_rental_app.VehicleRentalMain;
 import Vehicle_rental_app.dao.CustomerDAO;
 import Vehicle_rental_app.exception.AnkaRentalException;
 import Vehicle_rental_app.exception.ExceptionMessagesConstans;
@@ -9,7 +8,7 @@ import Vehicle_rental_app.util.PasswordUtil;
 
 public class CustomerService {
 
-    private CustomerDAO customerDAO;
+    private final CustomerDAO customerDAO;
 
 
     public CustomerService() {

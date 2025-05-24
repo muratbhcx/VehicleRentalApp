@@ -1,57 +1,35 @@
 package Vehicle_rental_app.dao;
 
 import Vehicle_rental_app.dao.constants.SqlScriptConstants;
+import Vehicle_rental_app.model.Customer;
 import Vehicle_rental_app.model.Rent;
-import Vehicle_rental_app.model.RentItem;
-import Vehicle_rental_app.model.Vehicle;
 import Vehicle_rental_app.util.DBUtil;
 
 import java.sql.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RentDAO implements BaseDAO<Rent> {
+public class RentDAO {
 
-    public long save(Rent rent) {
-        long generatedId = 0;
+    public void save(Rent rent) {
         try (Connection connection = DBUtil.getConnection();
-             PreparedStatement ps = connection.prepareStatement(SqlScriptConstants.RENT_SAVE, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = connection.prepareStatement(SqlScriptConstants.RENT_SAVE)) {
             ps.setLong(1, rent.getCustomer().getId());
-            ps.setTimestamp(2, Timestamp.valueOf(rent.getRentDate()));
-            ps.setBigDecimal(3, rent.getTotalAmount());
+            ps.setString(2, rent.getVehicleBrand());
+            ps.setString(3, rent.getVehicleModel());
+            ps.setBigDecimal(4, rent.getTotalAmount());
             ps.executeUpdate();
-            ResultSet rs = ps.getGeneratedKeys();
 
-            if (rs.next()) {
-                generatedId = rs.getInt(1);
-            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return generatedId;
-
     }
 
-    @Override
-    public void update(Rent rent) {
 
-    }
 
-    @Override
-    public Rent findById(Long id) {
-        return null;
-    }
 
-    @Override
-    public List<Rent> findAll(int page) {
-        return List.of();
-    }
 
-    @Override
-    public void delete(Long id) {
 
-    }
 
     public List<Rent> findAllByCustomerId(Long customerId) {
         List<Rent> rents = new ArrayList<>();
@@ -61,24 +39,13 @@ public class RentDAO implements BaseDAO<Rent> {
             ps.setLong(1, customerId);
             ResultSet rs = ps.executeQuery();
             while(rs.next()) {
-                long rentId = rs.getLong("rent_id");
 
                 Rent rent = new Rent();
-                rent.setId(rentId);
-                rent.setRentDate(LocalDateTime.parse(rs.getTimestamp("rent_date").toString()));
-                rent.setRentItems(new ArrayList<>());
-
-                Vehicle vehicle = new Vehicle();
-                vehicle.setId(rs.getLong("vehicle_id"));
-                vehicle.setBrand(rs.getString("vehicle_brand"));
-
-                RentItem rentItem = new RentItem();
-                rentItem.setRent(rent);
-                rentItem.setVehicle(vehicle);
-                rentItem.setPrice(rs.getBigDecimal("price"));
-
-                rent.getRentItems().add(rentItem);
-
+                rent.setId(rs.getLong("id"));
+                rent.setCustomer(new Customer(rs.getLong("customer_id")));
+                rent.setVehicleBrand(rs.getString("vehicle_brand"));
+                rent.setVehicleModel(rs.getString("vehicle_model"));
+                rent.setTotalAmount(rs.getBigDecimal("total_amount"));
                 rents.add(rent);
             }
         } catch (SQLException e) {

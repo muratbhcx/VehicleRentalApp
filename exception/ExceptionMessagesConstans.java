@@ -12,8 +12,6 @@ public class ExceptionMessagesConstans {
 
     public final static String USER_EMAIL_ALREADY_EXIST = "EMAİL SİSTEMDE KAYITLI!";
 
-    public static final String USER_EMAIL_DOES_NOT_EXIST = "GİRİLEN EMAİL İLE BİR KULLANICI BULUNAMAMAKTADIR!";
-
     public static final String USER_PASSWORDS_DOES_NOT_MATCH ="GİRİLEN EMAİL VEYA ŞİFRE YANLIŞ!";
 
     public static final String USER_IS_NOT_ACTIVE ="KULLANICI AKTİF DEĞİL VEYA BULUNAMADI!";

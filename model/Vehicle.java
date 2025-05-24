@@ -2,7 +2,9 @@ package Vehicle_rental_app.model;
 
 import java.math.BigDecimal;
 
-public class Vehicle extends BaseModel {
+public class Vehicle {
+
+    private long id;
 
     private String brand;
 
@@ -17,16 +19,6 @@ public class Vehicle extends BaseModel {
     private Category category;
 
     public Vehicle() {
-    }
-
-    public Vehicle(Long id) {
-        this.setId(id);
-    }
-
-    public Vehicle(Long id, String brand, BigDecimal price) {
-        this.setId(id);
-        this.brand = brand;
-        this.price = price;
     }
 
     public Vehicle(String brand, String model, int year, BigDecimal rentalPrice, BigDecimal price, Category category) {
@@ -46,6 +38,14 @@ public class Vehicle extends BaseModel {
         this.rentalPrice = rentalPrice;
         this.price = price;
         this.category = category;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getBrand() {

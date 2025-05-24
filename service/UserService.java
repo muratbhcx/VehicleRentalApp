@@ -11,8 +11,8 @@ public class UserService {
     private final UserDAO userDAO;
 
     public UserService() {
-        userDAO = new UserDAO();
-    }
+
+        userDAO = new UserDAO();}
 
     public void save(String username, String password) throws AnkaRentalException {
         User foundUser = userDAO.findByUsername(username);

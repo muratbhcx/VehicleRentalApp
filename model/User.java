@@ -50,14 +50,5 @@ public class User {
     public void setActive(Boolean active) {
         this.active = active;
     }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", Username='" + Username + '\'' +
-                ", password='" + password + '\'' +
-                ", active=" + active +
-                '}';
-    }
+    
 }

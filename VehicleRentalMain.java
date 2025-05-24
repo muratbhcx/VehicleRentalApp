@@ -1,16 +1,11 @@
 package Vehicle_rental_app;
 
-import Vehicle_rental_app.dao.UserDAO;
 import Vehicle_rental_app.exception.AnkaRentalException;
 import Vehicle_rental_app.exception.ExceptionMessagesConstans;
 import Vehicle_rental_app.model.*;
-import Vehicle_rental_app.model.enums.PaymentMethod;
 import Vehicle_rental_app.service.*;
-import Vehicle_rental_app.util.PasswordUtil;
 
-import java.lang.invoke.StringConcatException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -29,11 +24,8 @@ public class VehicleRentalMain {
 
     private static final VehicleService vehicleService = new VehicleService();
 
-    private static final CartService cartService = new CartService();
-
     private static final RentService rentService = new RentService();
 
-    private static final CartItemService cartItemService = new CartItemService();
 
     public static void main(String[] args) {
 
@@ -71,8 +63,7 @@ public class VehicleRentalMain {
         while (true) {
             System.out.println("-----Giriş Yap-----");
             System.out.println("1- Müşteri Girişi");
-            System.out.println("2- Kurumsal Müşteri Girişi");
-            System.out.println("3- Kullanıcı Girişi(ADMİN)");
+            System.out.println("2- Kullanıcı Girişi(ADMİN)");
             System.out.println("0- Geri Dön");
             System.out.println("Seçim Yapınız: ");
             int choise = scanner.nextInt();
@@ -81,9 +72,6 @@ public class VehicleRentalMain {
                     loginCustomer();
                     break;
                 case 2:
-                    logincrprtCustomer();
-                    break;
-                case 3:
                     loginUser();
                     break;
                 case 0:
@@ -94,10 +82,6 @@ public class VehicleRentalMain {
 
             }
         }
-    }
-
-    private static void logincrprtCustomer() {
-
     }
 
     private static void loginUser() throws AnkaRentalException {
@@ -112,7 +96,6 @@ public class VehicleRentalMain {
             getLoginedUserMenu();
 
 
-
         } else {
             throw new AnkaRentalException(ExceptionMessagesConstans.USER_IS_NOT_ACTIVE);
         }
@@ -123,45 +106,26 @@ public class VehicleRentalMain {
 
         while (true) {
             System.out.println("-----Admin Menü-----");
-            System.out.println("1- Kategori Oluştur");
-            System.out.println("2- Kategori Listele");
-            System.out.println("3- Kategori Sil");
-            System.out.println("4- Araç Oluştur");
-            System.out.println("5- Araç Listele");
-            System.out.println("6- Araç Sil");
-            System.out.println("7- Araç Arama");
-            System.out.println("8- Araç Filtreleme(Kategori Bazlı)");
-            System.out.println("9- Kiralamaları Listele");
+            System.out.println("1- Araç Oluştur");
+            System.out.println("2- Araç Listele");
+            System.out.println("3- Araç Arama");
+            System.out.println("4- Araç Filtreleme(Kategori Bazlı)");
             System.out.println("0- Geri");
             System.out.println("Seçim Yapınız: ");
             int choise = scanner.nextInt();
 
             switch (choise) {
                 case 1:
-                    createCategory();
-                    break;
-                case 2:
-                    listCategory();
-                    break;
-                case 3:
-                    deleteCategory();
-                    break;
-                case 4:
                     createVehicle();
                     break;
-                case 5:
+                case 2:
                     listVehicle();
-                case 6:
-                    deleteVehicle();
                     break;
-                case 7:
+                case 3:
                     searchVehicle();
                     break;
-                case 8:
+                case 4:
                     filterVehicle();
-                    break;
-                case 9:
-                    listRentals();
                     break;
                 case 0:
                     return;
@@ -176,32 +140,38 @@ public class VehicleRentalMain {
     }
 
     private static void filterVehicle() {
+        int totalPage = vehicleService.getTotalPage();
+        int page = 1;
         System.out.println("Kategori İsmi Giriniz: ");
         System.out.println("(otomobil, motosiklet, helikopter)");
         String categoryName = scanner.next();
-        List<Vehicle> vehicles = vehicleService.getAllByCategoryName(categoryName);
-        System.out.println("\n-----ARAÇ LİSTESİ (FİLTRELEME SONUCU)-----");
+
+        do {
+        List<Vehicle> vehicles = vehicleService.getAllByCategoryName(categoryName, page);
+        System.out.println("\n-----ARAÇ LİSTESİ (FİLTRELEME SONUCU)(sayfa : " + page + "/" + totalPage + ")-----");
+        System.out.printf("%-10s %-10s %-10s %-15s %-20s %-15s%n",
+                "MARKA", "MODEL", "ARAÇ YILI", "ARAÇ DEĞERİ", "SAATLİK KİRA FİYATI", "KATEGORİ");
         vehicles.forEach(vehicle ->
-                System.out.printf("%s - %s - %s - %s - %s\n", vehicle.getBrand(), vehicle.getModel(), vehicle.getYear(), vehicle.getPrice(), vehicle.getCategory().getName()));
+                System.out.printf("%-10s %-10s %-10s %-15s %-20s %-15s%n", vehicle.getBrand(), vehicle.getModel(), vehicle.getYear(), vehicle.getPrice(), vehicle.getRentalPrice(), vehicle.getCategory().getName()));
+            System.out.print("Sonraki Sayfa Sayısı: ");
+            String pageStr = scanner.next();
+            page = Integer.parseInt(pageStr);
+        }while (page <= totalPage);
     }
 
     private static void searchVehicle() {
         System.out.print("Araç Markası Giriniz: ");
-        String searchVehicleName = scanner.next();
-        List<Vehicle> vehicles = vehicleService.search(searchVehicleName);
+        String searchVehicleBrand = scanner.next();
+        List<Vehicle> vehicles = vehicleService.search(searchVehicleBrand);
+        if (vehicles.isEmpty()) {
+            System.out.println("ARAÇ BULUNAMADI!");
+            return;
+        }
         System.out.println("\n-----ARAÇ LİSTESİ (ARAMA SONUCU)-----");
+        System.out.printf("%-10s %-10s %-10s %-15s %-20s %-15s%n",
+                "MARKA", "MODEL", "ARAÇ YILI", "ARAÇ DEĞERİ", "SAATLİK KİRA FİYATI", "KATEGORİ");
         vehicles.forEach(vehicle ->
-                System.out.printf("%s - %s - %s - %s - %s\n", vehicle.getBrand(), vehicle.getModel(), vehicle.getYear(), vehicle.getPrice(), vehicle.getCategory().getName()));
-
-    }
-
-    private static void listRentals() {
-    }
-
-    private static void deleteVehicle() {
-        System.out.print("Silinecek Aracın Id'sini Giriniz: ");
-        String vehicleId = scanner.next();
-        vehicleService.deleteById(Long.parseLong(vehicleId));
+                System.out.printf("%-10s %-10s %-10s %-15s %-20s %-15s%n", vehicle.getBrand(), vehicle.getModel(), vehicle.getYear(), vehicle.getPrice(), vehicle.getRentalPrice(), vehicle.getCategory().getName()));
 
     }
 
@@ -211,15 +181,16 @@ public class VehicleRentalMain {
         do {
             List<Vehicle> vehicles = vehicleService.getAll(page);
             System.out.println("\n-----Araç Listesi(sayfa : " + page + "/" + totalPage + ")-----");
+            System.out.printf("%-10s %-10s %-10s %-15s %-20s %-15s%n",
+                    "MARKA", "MODEL", "ARAÇ YILI", "ARAÇ DEĞERİ", "SAATLİK KİRA FİYATI", "KATEGORİ");
             vehicles.forEach(vehicle ->
-                    System.out.printf("%s - %s - %s - %s - %s\n", vehicle.getBrand(), vehicle.getModel(), vehicle.getYear(), vehicle.getPrice(), vehicle.getCategory().getName()));
+                    System.out.printf("%-10s %-10s %-10s %-15s %-20s %-15s%n", vehicle.getBrand(), vehicle.getModel(), vehicle.getYear(), vehicle.getPrice(), vehicle.getRentalPrice(), vehicle.getCategory().getName()));
 
             System.out.print("Sonraki Sayfa Sayısı: ");
             String pageStr = scanner.next();
             page = Integer.parseInt(pageStr);
 
-        }while (page <= totalPage);
-
+        } while (page <= totalPage);
     }
 
     private static void createVehicle() throws AnkaRentalException {
@@ -228,32 +199,18 @@ public class VehicleRentalMain {
         System.out.println("Araç Modelini Giriniz: ");
         String model = scanner.next();
         System.out.println("Araç Yılını Giriniz: ");
-        Integer year = scanner.nextInt();
-        System.out.println("Araç Kiralama Değerini Giriniz: ");
+        int year = scanner.nextInt();
+        System.out.println("Araç Kiralama Değerini Giriniz(SAATLİK): ");
         String rentalPrice = scanner.next();
         System.out.println("Araç Fiyatını Giriniz: ");
         String price = scanner.next();
         System.out.println("Kategori Id Giriniz: ");
+        System.out.println("1- otomobil 2- motosiklet 3- helikopter");
         String categoryId = scanner.next();
 
         Category category = categoryService.getById(Long.parseLong(categoryId));
-        Vehicle vehicle = new Vehicle(brand, model, year, new BigDecimal(rentalPrice) , new BigDecimal(price), category);
-        vehicleService.save(vehicle, LOGINED_USER);
-    }
-
-    private static void deleteCategory() {
-        System.out.println("Kategori Id Giriniz: ");
-        String categoryId = scanner.next();
-        categoryService.deleteById(Long.parseLong(categoryId));
-    }
-
-    private static void listCategory() {
-        List<Category> categoryList = categoryService.getAll();
-        categoryList.forEach(System.out::println);
-    }
-
-    private static void createCategory() throws AnkaRentalException {
-        throw new AnkaRentalException("NOT IMPLEMENTED");
+        Vehicle vehicle = new Vehicle(brand, model, year, new BigDecimal(rentalPrice), new BigDecimal(price), category);
+        vehicleService.save(vehicle);
     }
 
     private static void loginCustomer() throws AnkaRentalException {
@@ -264,18 +221,17 @@ public class VehicleRentalMain {
         CustomerService customerService = new CustomerService();
         LOGINED_CUSTOMER = customerService.login(email, password);
 
-        while (true){
+        while (true) {
             System.out.println("1- Araç Listele");
             System.out.println("2- Araç Arama");
             System.out.println("3- Araç Filtreleme(Kategori Bazlı)");
-            System.out.println("4- Kiralama Oluştur");
-            System.out.println("5- Kiralama Yap");
-            System.out.println("6- Geçmiş Kiralamaları Listele");
+            System.out.println("4- Kiralama Yap");
+            System.out.println("5- Geçmiş Kiralamaları Listele");
             System.out.println("0- Geri");
             System.out.println("Seçim Yapınız: ");
             int choise = scanner.nextInt();
 
-            switch (choise){
+            switch (choise) {
                 case 1:
                     listVehicle();
                     break;
@@ -289,8 +245,6 @@ public class VehicleRentalMain {
                     createRental();
                     break;
                 case 5:
-                    makeRental();
-                case 6:
                     listPastRentals();
                     break;
                 case 0:
@@ -305,49 +259,31 @@ public class VehicleRentalMain {
     }
 
     private static void listPastRentals() {
-        List<Rent> rents = rentService.getAllByCustomer(LOGINED_CUSTOMER);
-        for (Rent rent : rents) {
-            System.out.printf("Kiralama #%d - %s",
-                    rent.getId(),rent.getRentDate());
-
-            for (RentItem item : rent.getRentItems()){
-                System.out.printf(" -> %s - %d", item.getVehicle().getBrand(),
-                        item.getPrice());
-            }
-        }
-    }
-
-    private static void makeRental() {
-
-        System.out.println("Bir Ödeme Yöntemi Seçiniz: (CREDIT_CARD, DEBIT_CARD, BANK_TRANSFER)");
-        String paymentMethodStr = scanner.next();
-
-        rentService.save(LOGINED_CUSTOMER, PaymentMethod.valueOf(paymentMethodStr));
+        rentService.listPastRentals(LOGINED_CUSTOMER);
 
     }
 
     private static void createRental() {
-        Boolean isVehicleFound = true;
-        long id = LOGINED_CUSTOMER.getId();
+        boolean isVehicleFound = true;
 
         while (isVehicleFound) {
             System.out.println("Araç Markası Giriniz: ");
             String brand = scanner.next();
+            System.out.println("Araç Modelini Giriniz: ");
+            String model = scanner.next();
 
-            Vehicle vehicle = vehicleService.getByName(brand);
+            Vehicle vehicle = vehicleService.getByBrand(brand, model);
 
             if (vehicle == null) {
                 System.out.println("Araç Bulunamadı!");
                 isVehicleFound = false;
-            }else {
-                List<CartItem> cart = cartItemService.findByCustomerId(id);
-                if (cart == null) {
-                    cart = new ArrayList<>();
-                }
-                cart.add(new CartItem(null,vehicle,new Cart()));
-                System.out.println("Kiralama Oluşturuldu!");
-                cartService.addToCart(LOGINED_CUSTOMER, vehicle);
             }
+            System.out.println("Kiralama tipi seçin (saat/gün/hafta/ay): ");
+            String periodType = scanner.next().toLowerCase();
+            System.out.print("Kaç " + periodType + " kiralamak istiyorsunuz?: ");
+            int time = scanner.nextInt();
+            rentService.createRental(LOGINED_CUSTOMER, vehicle, periodType, time);
+            return;
         }
 
     }
@@ -356,8 +292,7 @@ public class VehicleRentalMain {
         while (true) {
             System.out.println("-----Kayıt Ol-----");
             System.out.println("1- Müşteri Kayıt");
-            System.out.println("2- Kurumsal Müşteri Kayıt");
-            System.out.println("3- Kullanıcı Kayıt(ADMİN)");
+            System.out.println("2- Kullanıcı Kayıt(ADMİN)");
             System.out.println("0- Geri Dön");
             System.out.println("Seçim Yapınız: ");
             int choise = scanner.nextInt();
@@ -367,9 +302,6 @@ public class VehicleRentalMain {
                         saveCustomer();
                         break;
                     case 2:
-                        saveCrprtCustomer();
-                        break;
-                    case 3:
                         registerUser();
                         break;
                     case 0:
@@ -392,9 +324,6 @@ public class VehicleRentalMain {
         String password = scanner.next();
 
         userService.save(username, password);
-    }
-
-    private static void saveCrprtCustomer() {
     }
 
     private static void saveCustomer() throws AnkaRentalException {
@@ -426,9 +355,6 @@ public class VehicleRentalMain {
         String email = scanner.next();
         System.out.print("Şifre: ");
         String password = scanner.next();
-
-
-
 
         CustomerService customerService = new CustomerService();
         customerService.save(name, age, email, password, role);

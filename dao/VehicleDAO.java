@@ -7,18 +7,17 @@ import Vehicle_rental_app.model.Vehicle;
 import Vehicle_rental_app.util.DBUtil;
 
 import java.sql.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VehicleDAO implements BaseDAO<Vehicle> {
+public class VehicleDAO {
 
-    public List<Vehicle> searchByName(String name) {
+    public List<Vehicle> searchByBrand(String SearchVehicleBrand) {
         List<Vehicle> vehicles = new ArrayList<>();
 
-        try (Connection connection = DBUtil.getConnection()) {
-            PreparedStatement ps = connection.prepareStatement(SqlScriptConstants.VEHICLE_SEARCH_BY_NAME);
-            ps.setString(1, "%" + name + "%");
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement ps = connection.prepareStatement(SqlScriptConstants.VEHICLE_SEARCH_BY_NAME)) {
+            ps.setString(1, "%" + SearchVehicleBrand + "%");
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
@@ -27,10 +26,11 @@ public class VehicleDAO implements BaseDAO<Vehicle> {
                 v.setBrand(rs.getString("brand"));
                 v.setModel(rs.getString("model"));
                 v.setYear(rs.getInt("year"));
-                v.setRentalPrice(rs.getBigDecimal("rental_price"));
+                v.setRentalPrice(rs.getBigDecimal("hourly_rental_price"));
                 v.setPrice(rs.getBigDecimal("price"));
-                v.setCreatedDate(LocalDateTime.parse(rs.getString("created_date")));
-                v.setUpdatedDate(LocalDateTime.parse(rs.getString("updated_date")));
+                v.setCategory((new Category(rs.getLong("category_id"),
+                        rs.getString("category_name"))));
+                vehicles.add(v);
             }
 
 
@@ -40,7 +40,6 @@ public class VehicleDAO implements BaseDAO<Vehicle> {
         return vehicles;
     }
 
-    @Override
     public long save(Vehicle vehicle) {
         try (Connection connection = DBUtil.getConnection();
              PreparedStatement ps = connection.prepareStatement(SqlScriptConstants.VEHICLE_SAVE)) {
@@ -50,8 +49,6 @@ public class VehicleDAO implements BaseDAO<Vehicle> {
             ps.setBigDecimal(4, vehicle.getRentalPrice());
             ps.setBigDecimal(5, vehicle.getPrice());
             ps.setLong(6, vehicle.getCategory().getId());
-            ps.setLong(7, vehicle.getCreatedUser().getId());
-            ps.setLong(8, vehicle.getUpdatedUser().getId());
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -60,28 +57,6 @@ public class VehicleDAO implements BaseDAO<Vehicle> {
 
     }
 
-    @Override
-    public void update(Vehicle vehicle) {
-
-    }
-
-    @Override
-    public Vehicle findById(Long id) {
-
-        Vehicle vehicle = null;
-        try (Connection connection = DBUtil.getConnection();
-             PreparedStatement ps = connection.prepareStatement(SqlScriptConstants.VEHICLE_FIND_BY_ID)) {
-
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return vehicle;
-    }
-
-    @Override
     public List<Vehicle> findAll(int page) {
         List<Vehicle> vehicles = new ArrayList<>();
         try (Connection connection = DBUtil.getConnection();
@@ -96,7 +71,7 @@ public class VehicleDAO implements BaseDAO<Vehicle> {
                         rs.getString("brand"),
                         rs.getString("model"),
                         rs.getInt("year"),
-                        rs.getBigDecimal("rental_price"),
+                        rs.getBigDecimal("hourly_rental_price"),
                         rs.getBigDecimal("price"),
                         new Category(rs.getLong("category_id"),
                                 rs.getString("category_name"))));
@@ -105,18 +80,6 @@ public class VehicleDAO implements BaseDAO<Vehicle> {
             e.printStackTrace();
         }
         return vehicles;
-    }
-
-    @Override
-    public void delete(Long id) {
-        try (Connection connection = DBUtil.getConnection();
-             PreparedStatement ps = connection.prepareStatement(SqlScriptConstants.VEHICLE_DELETE)) {
-            ps.setLong(1, id);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
     }
 
     public int findTotalPage() {
@@ -134,18 +97,22 @@ public class VehicleDAO implements BaseDAO<Vehicle> {
         return 0;
     }
 
-    public List<Vehicle> findAllByCategoryName(String categoryName) {
+    public List<Vehicle> findAllByCategoryName(String categoryName, int page) {
         List<Vehicle> vehicles = new ArrayList<>();
         try (Connection connection = DBUtil.getConnection();
              PreparedStatement ps = connection.prepareStatement(SqlScriptConstants.VEHICLE_FIND_BY_CATEGORY_NAME)) {
             ps.setString(1,categoryName);
+            int size = AnkaRentalConstants.PAGE_SIZE;
+            int offset = (page - 1) * size;
+            ps.setInt(2, AnkaRentalConstants.PAGE_SIZE);
+            ps.setInt(3, offset);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 vehicles.add(new Vehicle(rs.getLong("id"),
                         rs.getString("brand"),
                         rs.getString("model"),
                         rs.getInt("year"),
-                        rs.getBigDecimal("rent_price"),
+                        rs.getBigDecimal("hourly_rental_price"),
                         rs.getBigDecimal("price"),
                         new Category(rs.getLong("category_id"),
                                 rs.getString("category_name"))));
@@ -157,18 +124,19 @@ public class VehicleDAO implements BaseDAO<Vehicle> {
 
     }
 
-    public Vehicle findByName(String brand) {
+    public Vehicle findByBrand(String brand, String model) {
         Vehicle vehicle = null;
         try (Connection connection = DBUtil.getConnection();
              PreparedStatement ps = connection.prepareStatement(SqlScriptConstants.VEHICLE_FIND_BY_NAME)) {
             ps.setString(1,brand);
+            ps.setString(2,model);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 vehicle = (new Vehicle(rs.getLong("id"),
                         rs.getString("brand"),
                         rs.getString("model"),
                         rs.getInt("year"),
-                        rs.getBigDecimal("rental_price"),
+                        rs.getBigDecimal("hourly_rental_price"),
                         rs.getBigDecimal("price"),
                         new Category(rs.getLong("category_id"),
                                 rs.getString("category_name"))));

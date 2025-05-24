@@ -15,42 +15,42 @@ public class BaseModel {
     private User updatedUser;
 
     public Long getId() {
+
         return id;
     }
 
     public void setId(Long id) {
+
         this.id = id;
     }
 
-    public LocalDateTime getCreatedDate() {
-        return createdDate;
-    }
-
     public void setCreatedDate(LocalDateTime createdDate) {
+
         this.createdDate = createdDate;
     }
 
-    public LocalDateTime getUpdatedDate() {
-        return updatedDate;
-    }
-
-    public void setUpdatedDate(LocalDateTime updatedDate) {
+    public void setUpdatedDate(LocalDateTime updatedDate)
+    {
         this.updatedDate = updatedDate;
     }
 
-    public User getCreatedUser() {
+    public User getCreatedUser()
+    {
         return createdUser;
     }
 
-    public void setCreatedUser(User createdUser) {
+    public void setCreatedUser(User createdUser)
+    {
         this.createdUser = createdUser;
     }
 
-    public User getUpdatedUser() {
+    public User getUpdatedUser()
+    {
         return updatedUser;
     }
 
-    public void setUpdatedUser(User updatedUser) {
+    public void setUpdatedUser(User updatedUser)
+    {
         this.updatedUser = updatedUser;
     }
 }
